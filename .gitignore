@@ -48,6 +48,7 @@ Binaries/*
 
 # Builds
 Build/*
+build/
 
 # Don't ignore icon files in Build
 !Build/**/*.ico
@@ -60,3 +61,6 @@ Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# externals
+externals/
