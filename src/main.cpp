@@ -1,19 +1,20 @@
 // Standard include files
 #include <opencv2/opencv.hpp>
 #include <opencv2/tracking.hpp>
+#include <opencv2/features2d.hpp>
 
-using namespace cv;
+#include <string>
 
 int main(int argc, char **argv)
 {
-  //VideoCapture cam("ant3.mp4");
+  cv::VideoCapture cam("input3.avi");
   
-  VideoCapture cam(0);
+  /*cv::VideoCapture cam(0);
 
   cam.set(CV_CAP_PROP_FOURCC, CV_FOURCC('M', 'J', 'P', 'G'));
   cam.set(CV_CAP_PROP_FPS, 30);
-  cam.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
-  cam.set(CV_CAP_PROP_FRAME_HEIGHT, 1080);
+  cam.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
+  cam.set(CV_CAP_PROP_FRAME_HEIGHT, 720);*/
   
   if (!cam.isOpened()) {
     std::cerr << "no camera detected" << std::endl;
@@ -25,8 +26,6 @@ int main(int argc, char **argv)
   int height = cam.get(CV_CAP_PROP_FRAME_HEIGHT);
 
   std::cout << "Resolution: " << width << "x" << height << std::endl;
-
-  Mat frame(height, width, CV_8UC1);
 
   // measure framerate
   /*
@@ -42,31 +41,69 @@ int main(int argc, char **argv)
   std::cin.get();
   */
 
-  Mat prev(height, width, CV_8UC1), curr(height, width, CV_8UC1), next(height, width, CV_8UC1);
-  Mat result(height, width, CV_8UC1), d1(height, width, CV_8UC1), d2(height, width, CV_8UC1);
+  cv::Mat frame(height, width, CV_8UC1), output(height, width, CV_8UC1), result(height, width, CV_8UC1);
+  cv::Mat curr(height, width, CV_64F), diff(height, width, CV_64F), mean(height, width, CV_64F);
+  
+  /*
+  cv::VideoWriter output("output.avi", 0, 30.0, cv::Size(width, height), false);
+  if (!output.isOpened()) {
+	  std::cerr << "scheisse" << std::endl;
+  }*/
 
-  for (;;) {
-    prev = curr;
-    curr = next;
-    cam >> next;
-    blur(next, next, Size(3, 3));
+  cv::SimpleBlobDetector::Params params;
 
-    cvtColor(next, next, CV_RGB2GRAY);
+  // Change thresholds
+  params.minThreshold = 3;
+  params.maxThreshold = 100;
 
-    absdiff(curr, next, d1);
-    //absdiff(curr, prev, d2);
+  // Filter by Area.
+  params.filterByArea = true;
+  params.minArea = 3;
 
+  cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(params);
+  std::vector<cv::KeyPoint> keypoints;
+  
+  cam >> frame;
+  frame.convertTo(mean, CV_64F);
+  result = mean;
+  for (double f=1;;f++) {
+	cam >> frame;
+	frame.convertTo(curr, CV_64F);
+    //blur(curr, curr, cv::Size(3, 3));
+
+    //cvtColor(curr, curr, CV_RGB2GRAY);
+
+	mean *= 0.95;
+	mean += 0.05 * curr;
+	cv::absdiff(mean, curr, diff);
+	cv::threshold(diff, diff, 25, 255, CV_THRESH_BINARY);
+	diff.convertTo(output, CV_8UC1);
+
+	std::cerr << 0 << std::endl;
+	detector->detect(output, keypoints);
+	std::cerr << 1 << std::endl;
+
+	cv::drawKeypoints(output, keypoints, result, cv::Scalar(0, 0, 255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+	std::cerr << 2 << std::endl;
+	imshow("", result);
+	//cv::absdiff(mean, curr, diff);
     //bitwise_and(d1, d2, result);
     //threshold(result, result, 35, 255, CV_THRESH_BINARY);
-    if (mean(d1)[0] > 1) continue;
+    //if (cv::mean(diff)[0] > 1) continue;
     //if (mean(d1)[0] > 0.1) continue;
 
-    threshold(d1, d1, 5, 255, CV_THRESH_BINARY);
-    result += d1;
+    //threshold(diff, diff, 5, 255, CV_THRESH_BINARY);
+	//result += diff;
     //result -= 1;
 
-    imshow("", result);
-    if (waitKey(10) == 27)
+    //imshow("", mean);
+	//output.write(curr);
+    if (cv::waitKey(10) == 27)
       break;
   }
+  //output.release();
+
+  // blob detection
+  // diff only
+  // mean of previous frames
 }
