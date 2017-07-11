@@ -92,22 +92,40 @@ void contourDetection(Mat &inputImage) {
     }
 
 
-	// //flann testing
- //    Mat testDraw = Mat::zeros(inputImage.size(), CV_8UC3);
- //    vector<Point2f> testAnts = randAnt();
- //    for(int i = 0; i<= testAnts.size(); ++i) {
-	// 	Scalar color = Scalar(255, 0, 0);
- //        circle(testDraw, testAnts[i], 2, color, -1, 2, 0);
- //    }
+	//flann testing
+    Mat testDraw = Mat::zeros(inputImage.size(), CV_8UC3);
+    vector<Point2f> testAnts = randAnt();
+    for(int i = 0; i<= testAnts.size(); ++i) {
+		Scalar color = Scalar(255, 0, 0);
+        circle(testDraw, testAnts[i], 2, color, -1, 2, 0);
+    }
 
-	// Mat testDraw2 = Mat::zeros(inputImage.size(), CV_8UC3);
-	// vector<Point2f> testAnts2;
-	// for (int i = 0; i <= testAnts2.size(); ++i) {
-	// 	Scalar color = Scalar(0, 255, 0);
-	// 	testAnts2[i].x = testAnts[i].x + 10;
-	// 	testAnts2[i].y = testAnts[i].y;
-	// 	circle(testDraw2, testAnts2[i], 2, color, -1, 2, 0);
-	// }
+    Mat testDraw2 = Mat::zeros(inputImage.size(), CV_8UC3);
+    vector<Point2f> testAnts2;
+    for (int i = 0; i <= testAnts.size(); ++i) {
+		Scalar color = Scalar(0, 255, 0);
+        testAnts2.push_back(Point2f(testAnts[i].x + 10, testAnts[i].y));
+        //testAnts2.push_back(testAnts[i].y);
+		// testAnts2[i].x = testAnts[i].x + 10;
+		// testAnts2[i].y = testAnts[i].y;
+		circle(testDraw2, testAnts2[i], 2, color, -1, 2, 0);
+	}
+
+    Mat antPos = Mat::zeros((int)testAnts.size(), 4, CV_8UC1);
+    std::cout << testAnts.size() << std::endl;
+    // std::cout << antPos.size() << std::endl;
+    // std::cout << "WHAT IS THIS?" << std::endl;
+    for(int i = 0; i < antPos.rows; ++i) {
+		auto temp = antPos.row(i);
+		temp.col(0) = testAnts[i].x;
+		temp.col(1) = testAnts[i].y;
+		temp.col(2) = testAnts2[i].x;
+		temp.col(3) = testAnts2[i].y;
+		std::cout << antPos.row(i) << std::endl;
+        //antPos.row(i) = temp;
+        //std::cout << antPos << std::endl;
+    }
+    std::cout << antPos << std::endl;
 
 	// FlannBasedMatcher matcher;
 	// std::vector< DMatch > matches;
@@ -115,65 +133,66 @@ void contourDetection(Mat &inputImage) {
 
 	// double max_dist = 0; double min_dist = 100;
 
- //  //-- Quick calculation of max and min distances between keypoints
- //  for( int i = 0; i < descriptors_1.rows; i++ )
- //  { double dist = matches[i].distance;
- //    if( dist < min_dist ) min_dist = dist;
- //    if( dist > max_dist ) max_dist = dist;
- //  }
+  // //-- Quick calculation of max and min distances between keypoints
+  // for( int i = 0; i < descriptors_1.rows; i++ )
+  // { double dist = matches[i].distance;
+  //   if( dist < min_dist ) min_dist = dist;
+  //   if( dist > max_dist ) max_dist = dist;
+  // }
 
- //  printf("-- Max dist : %f \n", max_dist );
- //  printf("-- Min dist : %f \n", min_dist );
+  // printf("-- Max dist : %f \n", max_dist );
+  // printf("-- Min dist : %f \n", min_dist );
 
- //  //-- Draw only "good" matches (i.e. whose distance is less than 2*min_dist,
- //  //-- or a small arbitary value ( 0.02 ) in the event that min_dist is very
- //  //-- small)
- //  //-- PS.- radiusMatch can also be used here.
- //  std::vector< DMatch > good_matches;
+  // //-- Draw only "good" matches (i.e. whose distance is less than 2*min_dist,
+  // //-- or a small arbitary value ( 0.02 ) in the event that min_dist is very
+  // //-- small)
+  // //-- PS.- radiusMatch can also be used here.
+  // std::vector< DMatch > good_matches;
 
- //  for( int i = 0; i < descriptors_1.rows; i++ )
- //  { if( matches[i].distance <= max(2*min_dist, 0.02) )
- //    { good_matches.push_back( matches[i]); }
- //  }
+  // for( int i = 0; i < descriptors_1.rows; i++ )
+  // { if( matches[i].distance <= max(2*min_dist, 0.02) )
+  //   { good_matches.push_back( matches[i]); }
+  // }
 
- //  vector<KeyPoint> keyPoint1;
- //  KeyPoint::convert(testAnts, keyPoint1, 1.0f, 1.0f, 0, -1);
- //  vector<KeyPoint> keyPoint2;
- //  //-- Draw only "good" matches
- //  Mat img_matches;
- //  drawMatches( testDraw, keyPoint1, testDraw2, keyPoint2,
- //               good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
- //               vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+  // vector<KeyPoint> keyPoint1;
+  // KeyPoint::convert(testAnts, keyPoint1, 1.0f, 1.0f, 0, -1);
+  // vector<KeyPoint> keyPoint2;
+  // //-- Draw only "good" matches
+  // Mat img_matches;
+  // drawMatches( testDraw, keyPoint1, testDraw2, keyPoint2,
+  //              good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
+  //              vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
 
- //  //-- Show detected matches
- //  imshow( "Good Matches", img_matches );
+  // //-- Show detected matches
+  // imshow( "Good Matches", img_matches );
 
- //    // Show in a window
- //    //namedWindow("Contours", CV_WINDOW_AUTOSIZE);
- //    //imshow("Contours", drawing);
+    //Show in a window
+    namedWindow("Contours", CV_WINDOW_AUTOSIZE);
+    imshow("Contours", drawing);
+
  //    namedWindow("Test", CV_WINDOW_AUTOSIZE);
- //    imshow("Test", testDraw);
-	// imshow("Test", testDraw2);
+    imshow("Test", testDraw);
+	imshow("Test", testDraw2);
 }
 
 VideoCapture setCamera(int &exposure) {
-    // cv::VideoCapture cam("input2.avi");
-    cv::VideoCapture cam(0);
+    cv::VideoCapture cam("input2.avi");
+    // cv::VideoCapture cam(0);
 
-    cam.set(CV_CAP_PROP_FOURCC, CV_FOURCC('M', 'J', 'P', 'G'));
-    cam.set(CV_CAP_PROP_FPS, 30);
-    cam.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-    cam.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
-    cam.set(CV_CAP_PROP_AUTO_EXPOSURE, 0);
-    cam.set(CV_CAP_PROP_EXPOSURE, exposure);
-    cam.set(CV_CAP_PROP_GAIN, 1);
-    cam.set(CV_CAP_PROP_FOCUS, 1);
+    // cam.set(CV_CAP_PROP_FOURCC, CV_FOURCC('M', 'J', 'P', 'G'));
+    // cam.set(CV_CAP_PROP_FPS, 30);
+    // cam.set(CV_CAP_PROP_FRAME_WIDTH, 640);
+    // cam.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+    // cam.set(CV_CAP_PROP_AUTO_EXPOSURE, 0);
+    // cam.set(CV_CAP_PROP_EXPOSURE, exposure);
+    // cam.set(CV_CAP_PROP_GAIN, 1);
+    // cam.set(CV_CAP_PROP_FOCUS, 1);
 
-    if (!cam.isOpened()) {
-        std::cerr << "no camera detected" << std::endl;
-        std::cin.get();
-        return 0;
-    }
+    // if (!cam.isOpened()) {
+    //     std::cerr << "no camera detected" << std::endl;
+    //     std::cin.get();
+    //     return 0;
+    // }
     return cam;
 }
 
@@ -212,6 +231,11 @@ void startTracking(VideoCapture &cam) {
     cv::Mat frameFromCamera(height, width, CV_8UC3), inputToBlob(height, width, CV_8UC3), result(height, width, CV_8UC3);
     cv::Mat curr(height, width, CV_32F), diff(height, width, CV_32F), background(height, width, CV_32F);
 
+    // cv::VideoWriter output("output.avi", 0, 30.0, cv::Size(width, height), false);
+    // if (!output.isOpened()) {
+    //     std::cerr << "scheisse" << std::endl;
+    // }
+
     cam >> frameFromCamera;
     frameFromCamera.convertTo(background, CV_32F);
     result = background;
@@ -243,7 +267,11 @@ void startTracking(VideoCapture &cam) {
         // imshow("3", background);
         if (cv::waitKey(10) == 27)
             break;
+
+        // output.write(curr);
+
     }
+    // output.release();
 }
 
 int main(int argc, char **argv)
